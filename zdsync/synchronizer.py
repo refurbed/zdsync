@@ -5,7 +5,8 @@ from zenpy.lib.api_objects import (
     Group,
     Macro,
     TicketField,
-    TicketForm
+    TicketForm,
+    Trigger
 )
 
 from .client import Client
@@ -134,32 +135,8 @@ class Synchronizer(object):
             Printer(self).output()
 
 
-class BrandSynchronizer(Synchronizer):
-
-    api_object = Brand
-    attributes_to_compare = ["name"]
-    attributes_to_sync = ["name", "subdomain"]
-
-    def _prepare_for_sync(self, _, new):
-        if "subdomain" in new:
-            new["subdomain"] = "{}{}".format(
-                new["subdomain"],
-                self.sandbox_client.subdomain.strip("easypost")
-            )
-
-
-class GroupSynchronizer(Synchronizer):
-
-    api_object = Group
-    attributes_to_compare = attributes_to_sync = ["name", "deleted"]
-
-
-class MacroSynchronizer(Synchronizer):
-
-    api_object = Macro
-    attributes_to_compare = attributes_to_sync = ["title", "active"]
-
-    def _prepare_for_sync(self, _, new):
+class ActionMixin:
+    def _action_prepare_for_sync(self, _, new):
         for action in new["actions"]:
             if "brand_id" == action["field"]:
                 action["value"] = self.find_sandbox_from_production_id(
@@ -219,6 +196,43 @@ class MacroSynchronizer(Synchronizer):
                                 )
                             )
 
+
+class BrandSynchronizer(Synchronizer):
+
+    api_object = Brand
+    attributes_to_compare = ["name"]
+    attributes_to_sync = ["name", "subdomain"]
+
+    def _prepare_for_sync(self, _, new):
+        if "subdomain" in new:
+            new["subdomain"] = "{}{}".format(
+                new["subdomain"],
+                self.sandbox_client.subdomain.strip("easypost")
+            )
+
+
+class GroupSynchronizer(Synchronizer):
+
+    api_object = Group
+    attributes_to_compare = attributes_to_sync = ["name", "deleted"]
+
+
+class TriggerSynchronizer(Synchronizer, ActionMixin):
+
+    api_object = Trigger
+    attributes_to_compare = attributes_to_sync = ["title", "active", "description", "position"]
+
+    def _prepare_for_sync(self, _, new):
+        self.action_prepare_for_sync(_, new)
+
+
+class MacroSynchronizer(Synchronizer, ActionMixin):
+
+    api_object = Macro
+    attributes_to_compare = attributes_to_sync = ["title", "active"]
+
+    def _prepare_for_sync(self, _, new):
+        self.action_prepare_for_sync(_, new)
 
 class TicketFieldSynchronizer(Synchronizer):
 

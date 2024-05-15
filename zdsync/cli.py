@@ -6,7 +6,8 @@ from .synchronizer import (
     GroupSynchronizer,
     MacroSynchronizer,
     TicketFieldSynchronizer,
-    TicketFormSynchronizer
+    TicketFormSynchronizer,
+    TriggerSynchronizer
 )
 
 
@@ -45,6 +46,11 @@ def main():
         help="Operate on Macros"
     )
     parser.add_argument(
+        "--triggers",
+        action="store_true",
+        help="Operate on Triggers"
+    )
+    parser.add_argument(
         "--all",
         action="store_true",
         help="Operate on all object types"
@@ -61,6 +67,8 @@ def main():
         TicketFormSynchronizer().run(execute=args.execute)
     if args.macros or args.all:
         MacroSynchronizer().run(execute=args.execute)
+    if args.triggers or args.all:
+        TriggerSynchronizer().run(execute=args.execute)
 
 
 if __name__ == "__main__":

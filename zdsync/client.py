@@ -11,7 +11,8 @@ class Client(object):
         "Group": "groups",
         "Macro": "macros",
         "TicketField": "ticket_fields",
-        "TicketForm": "ticket_forms"
+        "TicketForm": "ticket_forms",
+        "Trigger": "triggers",
     }
 
     def __init__(
@@ -59,6 +60,11 @@ class Client(object):
     @lru_cache()
     def macros(self):
         return dict((macro.title, macro) for macro in self._client.macros())
+
+    @property
+    @lru_cache()
+    def triggers(self):
+        return dict((trigger.title, trigger) for trigger in self._client.triggers())
 
     @property
     @lru_cache()
